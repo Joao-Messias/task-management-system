@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Django
+*.sqlite3
+
+# Node
+node_modules/
+theme/static_src/node_modules/
+
+# Tailwind output files
+theme/static/css/dist/
