@@ -1,14 +1,180 @@
-{% load static %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-white">
 <head>
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Management System</title>
+    {% tailwind_css %}
 </head>
-<body>
-    <h1 class="text-5xl text-center">Task Management System</h1>
+<body class="h-full">
+<div class="min-h-full">
+    <div class="py-10">
+        <header>
+            <div class="mx-auto max-w-7xl">
+                <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900">Task Management System</h1>
+            </div>
+        </header>
+        <main class="mt-10 mx-auto max-w-7xl">
+            <div class="overflow-hidden rounded-lg bg-white shadow">
+                <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
+                <div class="bg-white p-6">
+                    <div class="sm:flex sm:items-center sm:justify-between">
+                        <div class="sm:flex sm:space-x-5">
+                            <div class="flex-shrink-0">
+                                <img class="mx-auto h-20 w-20 rounded-full"
+                                     src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                                     alt="">
+                            </div>
+                            <div class="mt-4 text-center sm:mt-0 sm:pt-4 sm:text-left">
+                                <p class="text-sm font-medium text-gray-600">Welcome back,</p>
+                                <p class="text-xl font-bold text-gray-900 sm:text-2xl">{{ user.first_name }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-5 flex justify-center sm:mt-0 space-x-4">
+                            <button
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm
+                                      font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none
+                                      focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    onclick="toggleModal()">
+                                Create Task
+                            </button>
+                            <form action="{% url 'logout' %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm
+                                                font-medium rounded-md text-white bg-red-500 hover:bg-red-700 focus:outline-none
+                                                focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Log out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Task Summary Cards -->
+                <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                         onclick="showTasks('pending')">
+                        <span class="text-gray-900">{{ pending_count }}</span>
+                        <span class="text-gray-600">Pending tasks</span>
+                    </div>
+                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                         onclick="showTasks('overdue')">
+                        <span class="text-gray-900">{{ overdue_count }}</span>
+                        <span class="text-gray-600">Overdue tasks</span>
+                    </div>
+                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                         onclick="showTasks('completed')">
+                        <span class="text-gray-900">{{ completed_count }}</span>
+                        <span class="text-gray-600">Completed tasks</span>
+                    </div>
+                </div>
+
+
+                <!-- Task List Section -->
+                <div id="task-list" class="hidden bg-white p-6">
+                    <!-- Dynamic task list will be populated here -->
+                    <h3 class="text-lg font-bold text-gray-900">Tasks</h3>
+                    <ul id="tasks-container" class="mt-4 space-y-4">
+                        <!-- Task items will be dynamically inserted here -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<!-- Modal for Creating Task -->
+<div id="create-task-modal" class="fixed inset-0 z-50 hidden bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Create New Task</h2>
+        <form action="{% url 'create_task' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Title Field -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" name="title" id="title" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Description Field -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="description" id="description" rows="3"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Status Field -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <select name="status" id="status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <!-- Assign to User Field -->
+            <div>
+                <label for="assigned_to" class="block text-sm font-medium text-gray-700">Assign to User</label>
+                <select name="assigned_to" id="assigned_to"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">-- Select a User --</option>
+                    {% for user in form.fields.assigned_to.queryset %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-300"
+                        onclick="toggleModal()">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+<script>
+    function toggleModal() {
+        const modal = document.getElementById('create-task-modal');
+        modal.classList.toggle('hidden');
+    }
+
+    function showTasks(status) {
+        const taskList = document.getElementById('task-list');
+        taskList.classList.remove('hidden');
+
+        const tasksContainer = document.getElementById('tasks-container');
+        tasksContainer.innerHTML = '';
+
+        // Fetch tasks based on the status
+        fetch(`/tasks/${status}/`)
+            .then(response => response.json())
+            .then(data => {
+                const tasks = data.tasks;
+                if (tasks.length === 0) {
+                    tasksContainer.innerHTML = `<p class="text-gray-500">No tasks found.</p>`;
+                } else {
+                    tasks.forEach(task => {
+                        const taskItem = document.createElement('li');
+                        taskItem.classList.add('p-4', 'bg-gray-100', 'rounded-lg', 'shadow');
+                        taskItem.innerHTML = `
+                            <h4 class="font-bold">${task.title}</h4>
+                            <p class="text-gray-600">${task.description}</p>
+                        `;
+                        tasksContainer.appendChild(taskItem);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching tasks:', error));
+    }
+</script>
+
 </body>
 </html>

@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'task_management_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': r'C:\Users\joaop\Documents\banco_python\db.sqlite3',
     }
 }
 
@@ -123,3 +123,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+LOGIN_URL = 'login'  # Define a URL para redirecionar usuários não autenticados
+LOGIN_REDIRECT_URL = '/'  # Define para onde redirecionar após o login
+LOGOUT_REDIRECT_URL = 'login'  # Define para onde redirecionar após o logout
