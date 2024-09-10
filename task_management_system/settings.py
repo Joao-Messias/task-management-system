@@ -28,6 +28,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -79,7 +81,7 @@ WSGI_APPLICATION = 'task_management_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': r'C:\Users\joaop\Documents\banco_python\db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

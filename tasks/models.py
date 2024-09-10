@@ -8,6 +8,7 @@ class Task(models.Model):
         ('completed', 'Concluída'),
     ]
 
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')

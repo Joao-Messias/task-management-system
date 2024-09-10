@@ -9,4 +9,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('create-task/', views.create_task, name='create_task'),
     path('tasks/<str:status>/', views.get_tasks, name='get_tasks'),  # Nova URL para buscar tarefas por status
+    path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('tasks/delete/<int:task_id>/', views.delete_task, name='delete_task'),
 ]
