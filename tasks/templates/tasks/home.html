@@ -320,6 +320,7 @@
                 if (response.ok) {
                     toggleEditModal();
                     showTasks('pending');
+                    window.location.href = '/';
                 } else {
                     alert('Failed to update the task.');
                 }
@@ -341,7 +342,7 @@
             })
                 .then(response => {
                     if (response.ok) {
-                        showTasks('pending');
+                        window.location.href = '/';
                     } else {
                         alert('You cannot delete this task.');
                     }
@@ -351,6 +352,7 @@
                 });
         }
     }
+
 
     function getCsrfToken() {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
