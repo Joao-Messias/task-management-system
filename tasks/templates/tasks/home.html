@@ -342,6 +342,7 @@
             })
                 .then(response => {
                     if (response.ok) {
+                        showTasks('pending');
                         window.location.href = '/';
                     } else {
                         alert('You cannot delete this task.');
