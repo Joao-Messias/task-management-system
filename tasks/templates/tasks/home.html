@@ -31,6 +31,7 @@
                             <div class="mt-4 text-center sm:mt-0 sm:pt-4 sm:text-left">
                                 <p class="text-sm font-medium text-gray-600">Welcome back,</p>
                                 <p class="text-xl font-bold text-gray-900 sm:text-2xl">{{ user.first_name }}</p>
+                                <p class="text-sm font-medium text-gray-600">Below you see tasks assigned to you.</p>
                             </div>
                         </div>
                         <div class="mt-5 flex justify-center sm:mt-0 space-x-4">
@@ -54,29 +55,56 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
-                         onclick="showTasks('pending')">
-                        <span class="text-gray-900">{{ pending_count }}</span>
-                        <span class="text-gray-600">Pending tasks</span>
+                <div class="bg-white p-6 shadow">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">My Tasks</h3>
+                    <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showTasks('pending')">
+                            <span class="text-gray-900">{{ pending_count }}</span>
+                            <span class="text-gray-600">Pending tasks</span>
+                        </div>
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showTasks('in_progress')">
+                            <span class="text-gray-900">{{ in_progress_count }}</span>
+                            <span class="text-gray-600">In Progress tasks</span>
+                        </div>
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showTasks('completed')">
+                            <span class="text-gray-900">{{ completed_count }}</span>
+                            <span class="text-gray-600">Completed tasks</span>
+                        </div>
                     </div>
-                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
-                         onclick="showTasks('in_progress')">
-                        <span class="text-gray-900">{{ in_progress_count }}</span>
-                        <span class="text-gray-600">In Progress tasks</span>
-                    </div>
-                    <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
-                         onclick="showTasks('completed')">
-                        <span class="text-gray-900">{{ completed_count }}</span>
-                        <span class="text-gray-600">Completed tasks</span>
+
+                    <div id="task-list" class="hidden bg-white p-6">
+                        <ul id="tasks-container" class="mt-4 space-y-4">
+                        </ul>
                     </div>
                 </div>
 
-                <div id="task-list" class="hidden bg-white p-6">
-                    <h3 class="text-lg font-bold text-gray-900">Tasks</h3>
-                    <ul id="tasks-container" class="mt-4 space-y-4">
-                    
-                    </ul>
+                <!-- Seção de Todas as Tarefas -->
+                <div class="mt-4 bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">All Tasks</h3>
+                    <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showAllTasks('pending')">
+                            <span class="text-gray-900">{{ all_pending_count }}</span>
+                            <span class="text-gray-600">Pending tasks</span>
+                        </div>
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showAllTasks('in_progress')">
+                            <span class="text-gray-900">{{ all_in_progress_count }}</span>
+                            <span class="text-gray-600">In Progress tasks</span>
+                        </div>
+                        <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
+                             onclick="showAllTasks('completed')">
+                            <span class="text-gray-900">{{ all_completed_count }}</span>
+                            <span class="text-gray-600">Completed tasks</span>
+                        </div>
+                    </div>
+
+                    <div id="all-task-list" class="hidden bg-white p-6 mt-4">
+                        <ul id="all-tasks-container" class="mt-4 space-y-4"></ul>
+                    </div>
                 </div>
             </div>
         </main>
@@ -119,7 +147,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     <option value="">-- Select a User --</option>
                     {% for user in form.fields.assigned_to.queryset %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
+                        <option value="{{ user.id }}">{{ user.username }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -147,20 +175,23 @@
             <input type="hidden" id="edit-task-id" name="task_id">
             <div>
                 <label for="edit-title" class="block text-sm font-medium text-gray-700">Title</label>
-                <input type="text" name="title" id="edit-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" name="title" id="edit-title" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
             <div>
 
                 <label for="edit-description" class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea name="description" id="edit-description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                <textarea name="description" id="edit-description" rows="3"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
 
             </div>
 
             <div>
                 <label for="edit-status" class="block text-sm font-medium text-gray-700">Status</label>
 
-                <select name="status" id="edit-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select name="status" id="edit-status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     <option value="pending">Pending</option>
                     <option value="in_progress">In Progress</option>
                     <option value="completed">Completed</option>
@@ -170,16 +201,21 @@
 
             <div>
                 <label for="edit-assigned_to" class="block text-sm font-medium text-gray-700">Assign to User</label>
-                <select name="assigned_to" id="edit-assigned_to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select name="assigned_to" id="edit-assigned_to"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     {% for user in form.fields.assigned_to.queryset %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
+                        <option value="{{ user.id }}">{{ user.username }}</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="flex justify-end space-x-4">
-                <button type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-300" onclick="toggleEditModal()">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Save</button>
+                <button type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-300"
+                        onclick="toggleEditModal()">Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
+                    Save
+                </button>
             </div>
         </form>
     </div>
@@ -188,12 +224,12 @@
 
 <script>
 
-    document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('#create-task-modal form');
-        form.addEventListener('submit', function(event) {
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#create-task-modal form');
+        form.addEventListener('submit', function (event) {
             const assignedTo = document.getElementById('assigned_to').value;
             if (!assignedTo) {
-                event.preventDefault(); 
+                event.preventDefault();
                 alert('Please select a user to assign the task to.');
             }
         });
@@ -209,7 +245,7 @@
         taskList.classList.remove('hidden');
 
         const tasksContainer = document.getElementById('tasks-container');
-        tasksContainer.innerHTML = ''; 
+        tasksContainer.innerHTML = '';
 
         fetch(`/tasks/${status}/`)
             .then(response => {
@@ -243,56 +279,55 @@
             .catch(error => {
                 console.error('Error fetching tasks:', error);
                 tasksContainer.innerHTML = `<p class="text-red-500">Error loading tasks.</p>`;
-        });
+            });
     }
 
     function editTask(taskId) {
-    fetch(`/tasks/edit/${taskId}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('edit-task-id').value = data.id;
-            document.getElementById('edit-title').value = data.title;
-            document.getElementById('edit-description').value = data.description;
-            document.getElementById('edit-status').value = data.status;
-            document.getElementById('edit-assigned_to').value = data.assigned_to;
+        fetch(`/tasks/edit/${taskId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('edit-task-id').value = data.id;
+                document.getElementById('edit-title').value = data.title;
+                document.getElementById('edit-description').value = data.description;
+                document.getElementById('edit-status').value = data.status;
+                document.getElementById('edit-assigned_to').value = data.assigned_to;
 
-            toggleEditModal();
+                toggleEditModal();
+            })
+            .catch(error => {
+                console.error('Error fetching task:', error);
+            });
+    }
+
+    function toggleEditModal() {
+        const modal = document.getElementById('edit-task-modal');
+        modal.classList.toggle('hidden');
+    }
+
+    document.getElementById('edit-task-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const taskId = document.getElementById('edit-task-id').value;
+        const formData = new FormData(this);
+
+        fetch(`/tasks/edit/${taskId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: formData
         })
-        .catch(error => {
-            console.error('Error fetching task:', error);
-        });
-}
-
-function toggleEditModal() {
-    const modal = document.getElementById('edit-task-modal');
-    modal.classList.toggle('hidden');
-}
-
-document.getElementById('edit-task-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const taskId = document.getElementById('edit-task-id').value;
-    const formData = new FormData(this);
-
-    fetch(`/tasks/edit/${taskId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCsrfToken(),
-        },
-        body: formData
-    })
-    .then(response => {
-        if (response.ok) {
-            toggleEditModal();
-            showTasks('pending');
-        } else {
-            alert('Failed to update the task.');
-        }
-    })
-    .catch(error => {
-        console.error('Error updating task:', error);
+            .then(response => {
+                if (response.ok) {
+                    toggleEditModal();
+                    showTasks('pending');
+                } else {
+                    alert('Failed to update the task.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task:', error);
+            });
     });
-});
-
 
 
     function deleteTask(taskId) {
@@ -301,26 +336,68 @@ document.getElementById('edit-task-form').addEventListener('submit', function(ev
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken':  getCsrfToken() 
+                    'X-CSRFToken': getCsrfToken()
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    showTasks('pending'); 
-                } else {
-                    alert('Failed to delete the task.');
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting task:', error);
-            });
+                .then(response => {
+                    if (response.ok) {
+                        showTasks('pending');
+                    } else {
+                        alert('You cannot delete this task.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting task:', error);
+                });
         }
     }
 
-   function getCsrfToken() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    return csrfToken;
-}
+    function getCsrfToken() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        return csrfToken;
+    }
+
+    function showAllTasks(status) {
+        const taskList = document.getElementById('all-task-list');
+        taskList.classList.remove('hidden');
+
+        const tasksContainer = document.getElementById('all-tasks-container');
+        tasksContainer.innerHTML = '';
+
+        fetch(`/tasks/all/${status}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tasks = data.tasks;
+                if (!tasks || tasks.length === 0) {
+                    tasksContainer.innerHTML = `<p class="text-gray-500">No tasks found.</p>`;
+                } else {
+                    tasks.forEach(task => {
+                        console.log(task)
+
+                        const taskItem = document.createElement('li');
+                        taskItem.classList.add('p-4', 'bg-gray-100', 'rounded-lg', 'shadow', 'relative');
+                        taskItem.innerHTML = `
+                            <h4 class="font-bold">${task.title}</h4>
+                            <p class="text-gray-600">${task.description}</p>
+                            <button class="absolute top-2 right-16 px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="deleteTask(${task.id})">Delete</button>
+                            <button class="absolute top-2 right-2 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600" onclick="editTask(${task.id})">Edit</button>
+
+                        `;
+
+                        tasksContainer.appendChild(taskItem);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching tasks:', error);
+                tasksContainer.innerHTML = `<p class="text-red-500">Error loading tasks.</p>`;
+            });
+    }
 
 </script>
 

@@ -13,16 +13,25 @@ from django.contrib import messages
 
 @login_required(login_url='login')
 def home(request):
-    form = TaskForm()  
+    form = TaskForm()
     pending_tasks = Task.objects.filter(assigned_to=request.user, status='pending')
     in_progress_tasks = Task.objects.filter(assigned_to=request.user, status='in_progress')
     completed_tasks = Task.objects.filter(assigned_to=request.user, status='completed')
+
+    all_pending_tasks = Task.objects.filter(status='pending')
+    all_in_progress_tasks = Task.objects.filter(status='in_progress')
+    all_completed_tasks = Task.objects.filter(status='completed')
+
     return render(request, 'tasks/home.html', {
         'form': form,
         'pending_count': pending_tasks.count(),
         'in_progress_count': in_progress_tasks.count(),
         'completed_count': completed_tasks.count(),
+        'all_pending_count': all_pending_tasks.count(),
+        'all_in_progress_count': all_in_progress_tasks.count(),
+        'all_completed_count': all_completed_tasks.count(),
     })
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -48,11 +57,12 @@ def create_task(request):
         form = TaskForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
-            task.assigned_to = request.user  
+            assigned_to_user = form.cleaned_data.get('assigned_to')
+            task.assigned_to = assigned_to_user if assigned_to_user else request.user
             task.created_by = request.user
             task.save()
             messages.success(request, 'Task created successfully.')
-            return redirect('home')  
+            return redirect('home')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -64,6 +74,12 @@ def create_task(request):
 def get_tasks(request, status):
     tasks = Task.objects.filter(assigned_to=request.user, status=status)
     tasks_data = [{'title': task.title, 'description': task.description, 'id':task.id} for task in tasks]
+    return JsonResponse({'tasks': tasks_data})
+
+@login_required(login_url='login')
+def get_all_tasks(request, status):
+    tasks = Task.objects.filter(status=status)
+    tasks_data = [{'title': task.title, 'description': task.description, 'id': task.id} for task in tasks]
     return JsonResponse({'tasks': tasks_data})
 
 @login_required(login_url='login')
@@ -105,3 +121,9 @@ def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, created_by=request.user)
     task.delete()
     return JsonResponse({'status': 'success'})
+
+@login_required(login_url='login')
+def get_all_tasks(request, status):
+    tasks = Task.objects.filter(status=status)
+    tasks_data = [{'title': task.title, 'description': task.description, 'id': task.id} for task in tasks]
+    return JsonResponse({'tasks': tasks_data})
