@@ -13,7 +13,7 @@ from django.contrib import messages
 
 @login_required(login_url='login')
 def home(request):
-    form = TaskForm()  # Instancia o formulário para criação da tarefa
+    form = TaskForm()  
     pending_tasks = Task.objects.filter(assigned_to=request.user, status='pending')
     in_progress_tasks = Task.objects.filter(assigned_to=request.user, status='in_progress')
     completed_tasks = Task.objects.filter(assigned_to=request.user, status='completed')
@@ -26,20 +26,19 @@ def home(request):
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect('home')  # Redireciona para home se o usuário estiver logado
+        return redirect('home')  
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)  # Use the custom form
+        form = UserRegisterForm(request.POST)  
         if form.is_valid():
-            user = form.save(commit=False)  # Don't save to the database yet
-            # Save additional fields
+            user = form.save(commit=False)  
             user.first_name = form.cleaned_data.get('first_name')
             user.last_name = form.cleaned_data.get('last_name')
             user.email = form.cleaned_data.get('email')
-            user.save()  # Save to the database
+            user.save()  
             auth_login(request, user)
             return redirect('home')
     else:
-        form = UserRegisterForm()  # Use the custom form
+        form = UserRegisterForm()  
     return render(request, 'tasks/register.html', {'form': form})
 
 
@@ -49,11 +48,11 @@ def create_task(request):
         form = TaskForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
-            task.assigned_to = request.user  # Ajuste conforme necessário
+            task.assigned_to = request.user  
             task.created_by = request.user
             task.save()
             messages.success(request, 'Task created successfully.')
-            return redirect('home')  # Ajuste para a URL desejada
+            return redirect('home')  
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -63,7 +62,6 @@ def create_task(request):
 
 @login_required(login_url='login')
 def get_tasks(request, status):
-    # Retorna as tarefas do usuário logado com o status especificado
     tasks = Task.objects.filter(assigned_to=request.user, status=status)
     tasks_data = [{'title': task.title, 'description': task.description, 'id':task.id} for task in tasks]
     return JsonResponse({'tasks': tasks_data})
@@ -75,10 +73,32 @@ def edit_task(request, task_id):
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('home')  # Ajuste para a URL desejada
+            return redirect('home') 
     else:
         form = TaskForm(instance=task)
     return render(request, 'tasks/edit_task.html', {'form': form})
+
+@login_required(login_url='login')
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, created_by=request.user)
+
+    if request.method in ['POST', 'PUT'] :
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'status': 'success'})
+
+        return JsonResponse({'status': 'error', 'errors': form.errors})
+
+    task_data = {
+        'id': task.id,
+        'title': task.title,
+        'description': task.description,
+        'status': task.status,
+        'assigned_to': task.assigned_to.id if task.assigned_to else None,
+    }
+
+    return JsonResponse(task_data)
 
 @login_required(login_url='login')
 def delete_task(request, task_id):

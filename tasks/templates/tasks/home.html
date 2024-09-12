@@ -54,7 +54,6 @@
                     </div>
                 </div>
 
-                <!-- Task Summary Cards -->
                 <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                     <div class="px-6 py-5 text-center text-sm font-medium cursor-pointer"
                          onclick="showTasks('pending')">
@@ -76,7 +75,7 @@
                 <div id="task-list" class="hidden bg-white p-6">
                     <h3 class="text-lg font-bold text-gray-900">Tasks</h3>
                     <ul id="tasks-container" class="mt-4 space-y-4">
-                        <!-- Task items will be dynamically inserted here -->
+                    
                     </ul>
                 </div>
             </div>
@@ -92,21 +91,18 @@
         <form action="{% url 'create_task' %}" method="POST" class="space-y-4">
             {% csrf_token %}
 
-            <!-- Title Field -->
             <div>
                 <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
                 <input type="text" name="title" id="title" required
                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
-            <!-- Description Field -->
             <div>
                 <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                 <textarea name="description" id="description" rows="3"
                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
             </div>
 
-            <!-- Status Field -->
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                 <select name="status" id="status"
@@ -117,7 +113,6 @@
                 </select>
             </div>
 
-            <!-- Assign to User Field -->
             <div>
                 <label for="assigned_to" class="block text-sm font-medium text-gray-700">Assign to User</label>
                 <select name="assigned_to" id="assigned_to"
@@ -129,7 +124,6 @@
                 </select>
             </div>
 
-            <!-- Buttons -->
             <div class="flex justify-end space-x-4">
                 <button type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-300"
                         onclick="toggleModal()">Cancel
@@ -137,6 +131,55 @@
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
                     Create
                 </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for Editing Task -->
+
+<div id="edit-task-modal" class="fixed inset-0 z-50 hidden bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Edit Task</h2>
+        <form id="edit-task-form" method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            <input type="hidden" id="edit-task-id" name="task_id">
+            <div>
+                <label for="edit-title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" name="title" id="edit-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
+            <div>
+
+                <label for="edit-description" class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="description" id="edit-description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+
+            </div>
+
+            <div>
+                <label for="edit-status" class="block text-sm font-medium text-gray-700">Status</label>
+
+                <select name="status" id="edit-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+
+            </div>
+
+            <div>
+                <label for="edit-assigned_to" class="block text-sm font-medium text-gray-700">Assign to User</label>
+                <select name="assigned_to" id="edit-assigned_to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    {% for user in form.fields.assigned_to.queryset %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-300" onclick="toggleEditModal()">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Save</button>
             </div>
         </form>
     </div>
@@ -150,7 +193,7 @@
         form.addEventListener('submit', function(event) {
             const assignedTo = document.getElementById('assigned_to').value;
             if (!assignedTo) {
-                event.preventDefault(); // Impede o envio do formulário
+                event.preventDefault(); 
                 alert('Please select a user to assign the task to.');
             }
         });
@@ -166,9 +209,8 @@
         taskList.classList.remove('hidden');
 
         const tasksContainer = document.getElementById('tasks-container');
-        tasksContainer.innerHTML = ''; // Limpa a lista de tarefas
+        tasksContainer.innerHTML = ''; 
 
-        // Fetch tasks based on the status
         fetch(`/tasks/${status}/`)
             .then(response => {
                 if (!response.ok) {
@@ -203,18 +245,68 @@
                 tasksContainer.innerHTML = `<p class="text-red-500">Error loading tasks.</p>`;
         });
     }
+
+    function editTask(taskId) {
+    fetch(`/tasks/edit/${taskId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit-task-id').value = data.id;
+            document.getElementById('edit-title').value = data.title;
+            document.getElementById('edit-description').value = data.description;
+            document.getElementById('edit-status').value = data.status;
+            document.getElementById('edit-assigned_to').value = data.assigned_to;
+
+            toggleEditModal();
+        })
+        .catch(error => {
+            console.error('Error fetching task:', error);
+        });
+}
+
+function toggleEditModal() {
+    const modal = document.getElementById('edit-task-modal');
+    modal.classList.toggle('hidden');
+}
+
+document.getElementById('edit-task-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const taskId = document.getElementById('edit-task-id').value;
+    const formData = new FormData(this);
+
+    fetch(`/tasks/edit/${taskId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            toggleEditModal();
+            showTasks('pending');
+        } else {
+            alert('Failed to update the task.');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating task:', error);
+    });
+});
+
+
+
     function deleteTask(taskId) {
         if (confirm('Are you sure you want to delete this task?')) {
             fetch(`/tasks/delete/${taskId}/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken':  getCsrfToken() // Certifique-se de que esta função está correta
+                    'X-CSRFToken':  getCsrfToken() 
                 }
             })
             .then(response => {
                 if (response.ok) {
-                    showTasks('pending'); // Atualize a lista de tarefas após a exclusão
+                    showTasks('pending'); 
                 } else {
                     alert('Failed to delete the task.');
                 }
